@@ -1,0 +1,176 @@
+import random
+from words import list_easywords
+from words import list_hardwords
+
+
+def get_word(): # in deze def kan de user moeilijkheidsgraads kiezen als die alleen speelt. Of de tweede speler moet een woord verzinnen zodat speler 1 kan raden.
+    check = False
+    pcheck = False
+    while pcheck is False: # deze while loop checkt of de speler daadwerkelijk ook een 1 of 2 heeft ingetypt zoniet word de vraag opnieuw gesteld
+        players = int(input("Druk op [1] als je alleen wilt spelen en [2] als je samen wilt spelen: "))
+
+        if players == 2: # dit word uitgevoerd als er 2 spelers zijn
+            while check is False:
+                secret_word = input("Het geheime woord moet tussen 2 en de 25 letters lang zijn: ") # vraagt voor secret woord
+                if len(secret_word) < 25 and len(secret_word) > 2: # checkt of die voldoet aan eisen
+                    return secret_word.upper()
+                else:
+                    print("Pas op het woord dat je hebt gegeven moet tussen de 2 en 25 letters lang zijn!") #krijg foutmelding als die te kort / te lang is
+                    check is False
+
+
+        elif players == 1: # user speelt alleen en kan moeilijkheidsgraad kiezen
+            choice = input("Kies u moelijkheidsgraad druk op [q] voor makkelijk en [e] voor moeilijk: ").upper()
+            if choice == "Q": # op basis van zijn keuze word de secret word uitgekozen van of de makkelijke woorden of de moeilijke woorden
+                    secret_word = random.choice(list_easywords)
+                    return secret_word.upper()
+            else:
+                    secret_word = random.choice(list_hardwords)
+                    return secret_word.upper()
+        else:
+            print("Pas op u heeft een verkeerde input gegeven druk")
+            pcheck is False #pcheck oftwel playercheck word False voor de While loop dat checkt of de speler [1] of [2] heeft getypt
+
+def play(secret_word):
+    full_word = "_" * len(secret_word)
+    guessed = False
+    guessed_letters = []
+    guessed_words = []
+    tries = 6
+    print("Zet je schrap we gaan galgje spelen!")
+    print(display_hangman(tries))
+    print(full_word)
+    print("\n")
+    while not guessed and tries > 0: #loop runt zolang het niet geraden is of als tries niet meer groter is dan 0
+        guess = input("Typ een letter of een woord: ").upper() #elk gegeven letter krijg de naam 'guess'
+        print("Deze letters heb je al gebruikt: ",''.join(guessed_letters))#lijst te zien met alle letters die de user heeft opgenoemd
+        if len(guess) == 1 and guess.isalpha():
+        #de input van user mag niet langer zijn dan 1 char en het moet een letter uit het alphabet zijn, zoniet krijgt user foutmelding
+            if guess in guessed_letters:
+                print("Letter heb je al gebruikt", guess) # als dezelfde letter 2x word gegeven
+            elif guess not in secret_word:
+                print(guess, "zit niet er niet in.") #letter zit er niet in
+                tries -= 1
+                guessed_letters.append(guess) #zojuist getypte letter word in het list toegevoegd van al gerade letters
+            else:
+                print("Goed zo", guess, "zit er in!")
+                guessed_letters.append(guess) #zojuiste getypte letter word in het list toegevoegd van al gerade letters
+                word_list = list(full_word)
+                indices = [i for i, letter in enumerate(secret_word) if letter == guess]
+                for index in indices: #for loop om elk _ te vervangen met de guess die de user heeft ingevuld heeft
+                    word_list[index] = guess
+                full_word = "".join(word_list) #het full_word update door het te vervangen terug naar string
+                if "_" not in full_word: #als er geen _ meer is betekend dat het woord geraden is
+                    guessed = True
+
+        elif len(guess) == len(secret_word) and guess.isalpha(): #raden van het woord
+            if guess in guessed_words:
+                print("Je hebt het woord al geraden", guess)
+            elif guess != secret_word:
+                print(guess, "is not in the word", guess)
+                tries =- 1
+                guessed_words.append(guess)
+            else:
+                guessed = True
+                full_word = secret_word
+
+        else:
+            print("Onjuiste input ")
+        print(display_hangman(tries))
+        print(full_word)
+        print("\n")
+
+    if guessed:
+        print("Gefeliciteerd, je hebt het woord geraden!")
+    else:
+        print("Jammer je hebt verlore het juiste woord was ", secret_word)
+
+
+def display_hangman(tries):
+        stages = [  # hoofd lichaam beide armen en benen
+            """
+               --------
+               |      |
+               |      O
+               |     \\|/
+               |      |
+               |     / \\
+               -
+               laatste poging !
+            """,
+            # hoofd lichaam 1 been
+            """
+               --------
+               |      |
+               |      O
+               |     \\|/
+               |      |
+               |     / 
+               -
+               Twee pogingen over !
+            """,
+            # hoofd lichaam beide armen
+            """
+               --------
+               |      |
+               |      O
+               |     \\|/
+               |      |
+               |      
+               -
+               Drie pogingen over !
+            """,
+            # hoofd lichaam arm
+            """
+               --------
+               |      |
+               |      O
+               |     \\|
+               |      |
+               |     
+               -
+               Vier pogingen over !
+            """,
+            # hoofd lichaam
+            """
+               --------
+               |      |
+               |      O
+               |      |
+               |      |
+               |     
+               -
+               Vijf pogingen over !
+            """,
+            # hoofd
+            """
+               --------
+               |      |
+               |      O
+               |    
+               |      
+               |     
+               -
+               Zes pogingen over !
+            """,
+            # nog niks
+            """
+               --------
+               |      |
+               |      
+               |    
+               |      
+               |     
+               -
+                Laat het spel beginnen veel Succes !
+            """
+        ]
+        return stages[tries]
+
+def main():
+    secret_word = get_word()
+    play(secret_word)
+    while input("Wil je nog een keer spelen [J/N]").upper() == "J":
+        secret_word = get_word()
+        play(secret_word)
+main()
